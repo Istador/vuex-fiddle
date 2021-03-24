@@ -5,7 +5,7 @@ import fetch from './fetch'
 let n: number = 0
 
 export default function example (component: Vue, initialLoad: boolean = true) {
-  return fetch({
+  return fetch<number[]>({
     $store      : component.$store,
     name        : 'fetch/example',
     initial     : [],

@@ -1,13 +1,14 @@
 <template>
   <div id="app">
-    <button @click="object.refresh" v-if="! object.initialized">load</button>
+    <button @click="object.refresh" v-if="object.initialized">add</button>
+    <button @click="object.refresh" v-else>load</button>
     <div>
-      <button @click="object.refresh" v-if="object.initialized">add</button>
-      <div>Object:
-        <div>Initialized: {{object.initialized}}</div>
-        <div>Loading: {{object.loading}}</div>
-        <div>Error: {{object.error && object.error.message}}</div>
-        <div>Data: {{object.data}}</div>
+      <div>
+        Object:
+        <div>Initialized: {{ object.initialized }}</div>
+        <div>Loading: {{ object.loading }}</div>
+        <div>Error: {{ object.error && object.error.message }}</div>
+        <div>Data: {{ object.data }}</div>
       </div>
     </div>
     <div>Simple: {{ simple }}</div>

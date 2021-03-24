@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { AxiosStatic } from 'axios'
 import { Module, Store } from 'vuex'
 
 export interface IFetchState<T> {
@@ -8,8 +9,15 @@ export interface IFetchState<T> {
   initialized   : boolean
   error         : false|Error
 }
+export interface IFetchObject<T> {
+  readonly data        : T
+  readonly loading     : boolean
+  readonly initialized : boolean
+  readonly error       : false|Error
+  refresh()            : Promise<T>
+}
 
-type TPromise<T> = (args: { axios: any, state: IFetchState<T> }) => T
+type TPromise<T> = (args: { axios: AxiosStatic, state: IFetchState<T> }) => Promise<T>
 
 interface IFetchConfig<T> {
   promise : TPromise<T>
@@ -82,7 +90,7 @@ export default function fetch <T> ({
   promise,
   initial,
   initialLoad,
-} : IFetchOptions<T>) {
+} : IFetchOptions<T>): IFetchObject<T> {
   const obj = {
     get data()        { return $store.state[name].data        },
     get loading()     { return $store.state[name].loading     },
