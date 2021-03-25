@@ -15,6 +15,7 @@ export interface IFetchObject<T> {
   readonly initialized : boolean
   readonly error       : false|Error
   refresh()            : Promise<T>
+  unregister()         : void
 }
 
 type TPromise<T> = (args: { axios: AxiosStatic, state: IFetchState<T> }) => Promise<T>
@@ -44,11 +45,7 @@ const moduleConfig: <T>(config: IFetchConfig<T>) => Module<IFetchState<T>, any> 
     error       : false,
   },
   mutations: {
-    data        : (state, val) => state.data        = val,
-    loading     : (state, val) => state.loading     = val,
-    initialized : (state, val) => state.initialized = val,
-    error       : (state, val) => state.error       = val,
-    $multiple: (state, vals) => {
+    setter: (state, vals) => {
       for (const k in vals) {
         state[k] = vals[k]
       }
@@ -56,10 +53,10 @@ const moduleConfig: <T>(config: IFetchConfig<T>) => Module<IFetchState<T>, any> 
   },
   actions: {
     async refresh({ commit, state }) {
-      commit('loading', true)
+      commit('setter', { loading: true })
       try {
         const data = await promise({ axios, state })
-        commit('$multiple', {
+        commit('setter', {
           data        : data,
           error       : false,
           loading     : false,
@@ -68,19 +65,13 @@ const moduleConfig: <T>(config: IFetchConfig<T>) => Module<IFetchState<T>, any> 
         return data
       }
       catch (error) {
-        commit('$multiple', {
+        commit('setter', {
           error   : error,
           loading : false,
         })
         throw error
       }
     },
-  },
-  getters: {
-    data        : (state) => state.data,
-    loading     : (state) => state.loading,
-    initialized : (state) => state.initialized,
-    error       : (state) => state.error,
   },
 })
 
@@ -97,10 +88,13 @@ export default function fetch <T> ({
     get initialized() { return $store.state[name].initialized },
     get error()       { return $store.state[name].error       },
     refresh: async () => $store.dispatch(name + '/refresh'),
+    unregister: () => $store.unregisterModule(name)
   }
   if (! ($store && $store.state && name in $store.state)) {
     $store.registerModule(name, moduleConfig({ promise, initial }))
-    if (initialLoad && ! obj.loading) { obj.refresh() }
+  }
+  if (initialLoad && ! obj.initialized && ! obj.loading) {
+    obj.refresh()
   }
   return obj
 }
